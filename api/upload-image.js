@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
 
       // Upload image to DigitalOcean Spaces
       const params = {
-        Bucket: 'hardy7', // Replace with your Space name
+        Bucket: 'hardi7', // Replace with your Space name
         Key: `uploads/image_${Date.now()}.png`, // File name in the Space
         Body: imageBuffer,
         ContentType: 'image/png',
