@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin Panel</h1>
+
+  <h2>Payments</h2>
+  <table id="paymentsTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Transaction Hash</th>
+        <th>Amount (BNB)</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+
+  <h2>Uploaded Images</h2>
+  <div id="imagesGallery">
+    <!-- Images will be displayed here -->
+  </div>
+
+  <script>
+    // Fetch payments
+    fetch('/api/admin/get-payments')
+      .then(response => response.json())
+      .then(payments => {
+        const paymentsTable = document.getElementById('paymentsTable').getElementsByTagName('tbody')[0];
+        payments.forEach(payment => {
+          const row = paymentsTable.insertRow();
+          row.insertCell(0).textContent = payment.id;
+          row.insertCell(1).textContent = payment.txHash;
+          row.insertCell(2).textContent = payment.amount;
+          row.insertCell(3).textContent = payment.timestamp;
+        });
+      });
+
+    // Fetch images
+    fetch('/api/admin/get-images')
+      .then(response => response.json())
+      .then(images => {
+        const imagesGallery = document.getElementById('imagesGallery');
+        images.forEach(image => {
+          const imgElement = document.createElement('img');
+          imgElement.src = `/uploads/${path.basename(image.path)}`;
+          imgElement.style.width = '100px';
+          imgElement.style.margin = '5px';
+          imagesGallery.appendChild(imgElement);
+        });
+      });
+  </script>
+</body>
+</html>
