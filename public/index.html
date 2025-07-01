@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webcam Upload with Payment</title>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.0/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+  <h1>Webcam Upload</h1>
+  <video id="webcam" autoplay></video>
+  <button id="capture">Capture Picture</button>
+  <button id="record" style="display:none;">Record Video</button>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <input type="file" id="videoUpload" accept="video/*" style="display:none;">
+  <button id="pay">Pay with BNB</button>
+
+  <script>
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    const captureButton = document.getElementById('capture');
+    const recordButton = document.getElementById('record');
+    const payButton = document.getElementById('pay');
+
+    // Access webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      })
+      .catch(error => {
+        console.error('Error accessing webcam:', error);
+      });
+
+    // Capture image
+    captureButton.addEventListener('click', () => {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL('image/png'); // Convert to base64
+      // Send imageData to backend
+      fetch('/api/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData })
+      });
+    });
+
+    // Pay with BNB
+    payButton.addEventListener('click', async () => {
+      const amount = 0.12; // Payment amount in BNB
+      const recipientAddress = '0x12E18E0eDE8722d2EEa6163C2Ae4d70b6a82b779'; // Your BSC wallet address
+
+      // Connect to MetaMask
+      if (window.ethereum) {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const signer = provider.getSigner();
+
+        // Create a transaction
+        const tx = await signer.sendTransaction({
+          to: recipientAddress,
+          value: ethers.utils.parseEther(amount.toString())
+        });
+
+        // Wait for transaction to be mined
+        await tx.wait();
+        alert('Payment successful!');
+
+        // Verify payment on backend
+        fetch('/api/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ txHash: tx.hash })
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              alert('Payment verified on backend!');
+            } else {
+              alert('Payment verification failed.');
+            }
+          });
+      } else {
+        alert('Please install MetaMask to pay with BNB.');
+      }
+    });
+  </script>
+</body>
+</html>

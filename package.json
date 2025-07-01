@@ -1,0 +1,10 @@
+{
+  "name": "webcam-payment-app",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "vercel dev"
+  },
+  "dependencies": {
+    "ethers": "^6.7.0"
+  }
+}
