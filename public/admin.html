@@ -62,7 +62,7 @@
         const imagesGallery = document.getElementById('imagesGallery');
         images.forEach(image => {
           const imgElement = document.createElement('img');
-          imgElement.src = `/uploads/${path.basename(image.path)}`;
+          imgElement.src = image.path; // URL of the uploaded image
           imgElement.style.width = '100px';
           imgElement.style.margin = '5px';
           imagesGallery.appendChild(imgElement);
