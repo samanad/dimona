@@ -1,32 +1,48 @@
 const fs = require('fs');
 const path = require('path');
+const AWS = require('aws-sdk');
+
+// Configure AWS SDK for DigitalOcean Spaces
+const spacesEndpoint = new AWS.Endpoint('nyc3.digitaloceanspaces.com'); // Replace with your Space's region
+const s3 = new AWS.S3({
+  endpoint: spacesEndpoint,
+  accessKeyId: 'YOUR_ACCESS_KEY_ID', // Replace with your DigitalOcean Spaces Access Key
+  secretAccessKey: 'YOUR_SECRET_ACCESS_KEY', // Replace with your DigitalOcean Spaces Secret Key
+});
 
 module.exports = async (req, res) => {
   if (req.method === 'POST') {
     try {
       const imageData = req.body.image;
+      const imageBuffer = Buffer.from(imageData.replace(/^data:image\/\w+;base64,/, ""), 'base64');
 
-      // Ensure the uploads folder exists
-      const uploadsFolder = path.join(process.cwd(), 'uploads');
-      if (!fs.existsSync(uploadsFolder)) {
-        fs.mkdirSync(uploadsFolder);
-      }
+      // Upload image to DigitalOcean Spaces
+      const params = {
+        Bucket: 'YOUR_SPACE_NAME', // Replace with your Space name
+        Key: `uploads/image_${Date.now()}.png`, // File name in the Space
+        Body: imageBuffer,
+        ContentType: 'image/png',
+        ACL: 'public-read', // Make the image publicly accessible
+      };
 
-      // Save image to the uploads folder
-      const imagePath = path.join(uploadsFolder, `image_${Date.now()}.png`);
-      fs.writeFileSync(imagePath, imageData.replace(/^data:image\/\w+;base64,/, ""), 'base64');
+      s3.upload(params, (err, data) => {
+        if (err) {
+          console.error('Error uploading image to DigitalOcean Spaces:', err);
+          res.status(500).json({ message: 'Error uploading image', error: err.message });
+        } else {
+          // Save image metadata to JSON file
+          const imageMetadataPath = path.join(process.cwd(), 'data', 'images.json');
+          const imageMetadata = JSON.parse(fs.existsSync(imageMetadataPath) ? fs.readFileSync(imageMetadataPath, 'utf-8') : '[]');
+          imageMetadata.push({
+            id: Date.now(),
+            path: data.Location, // URL of the uploaded image
+            uploadedAt: new Date().toISOString(),
+          });
+          fs.writeFileSync(imageMetadataPath, JSON.stringify(imageMetadata, null, 2));
 
-      // Save image metadata to JSON file
-      const imageMetadataPath = path.join(process.cwd(), 'data', 'images.json');
-      const imageMetadata = JSON.parse(fs.existsSync(imageMetadataPath) ? fs.readFileSync(imageMetadataPath, 'utf-8') : '[]');
-      imageMetadata.push({
-        id: Date.now(),
-        path: `/uploads/image_${Date.now()}.png`, // Relative path to the image
-        uploadedAt: new Date().toISOString()
+          res.status(200).json({ message: 'Image uploaded successfully', url: data.Location });
+        }
       });
-      fs.writeFileSync(imageMetadataPath, JSON.stringify(imageMetadata, null, 2));
-
-      res.status(200).json({ message: 'Image uploaded successfully' });
     } catch (error) {
       console.error('Error uploading image:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
