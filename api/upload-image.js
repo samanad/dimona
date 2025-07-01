@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
     const imageMetadata = JSON.parse(fs.existsSync(imageMetadataPath) ? fs.readFileSync(imageMetadataPath, 'utf-8') : '[]');
     imageMetadata.push({
       id: Date.now(),
-      path: imagePath,
+      path: `/uploads/image_${Date.now()}.png`, // Relative path to the image
       uploadedAt: new Date().toISOString()
     });
     fs.writeFileSync(imageMetadataPath, JSON.stringify(imageMetadata, null, 2));
