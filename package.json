@@ -5,6 +5,7 @@
     "start": "vercel dev"
   },
   "dependencies": {
+    "aws-sdk": "^2.1394.0", // Add this line
     "ethers": "^6.7.0"
   }
 }
