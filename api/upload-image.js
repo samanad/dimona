@@ -6,8 +6,8 @@ const AWS = require('aws-sdk');
 const spacesEndpoint = new AWS.Endpoint('nyc3.digitaloceanspaces.com'); // Replace with your Space's region
 const s3 = new AWS.S3({
   endpoint: spacesEndpoint,
-  accessKeyId: 'YOUR_ACCESS_KEY_ID', // Replace with your DigitalOcean Spaces Access Key
-  secretAccessKey: 'YOUR_SECRET_ACCESS_KEY', // Replace with your DigitalOcean Spaces Secret Key
+  accessKeyId: 'DO801LQKFKE9RTQJDXJB', // Replace with your DigitalOcean Spaces Access Key
+  secretAccessKey: 'vpxVLUDDDlyjB/iHTHOH9FtG6d72KU8q7mES5LUhG2M', // Replace with your DigitalOcean Spaces Secret Key
 });
 
 module.exports = async (req, res) => {
@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
 
       // Upload image to DigitalOcean Spaces
       const params = {
-        Bucket: 'YOUR_SPACE_NAME', // Replace with your Space name
+        Bucket: 'hardy7', // Replace with your Space name
         Key: `uploads/image_${Date.now()}.png`, // File name in the Space
         Body: imageBuffer,
         ContentType: 'image/png',
